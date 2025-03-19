@@ -1,0 +1,4 @@
+name: GroupChat
+version: '1.0-SNAPSHOT'
+main: net.ezplace.groupChat.GroupChat
+api-version: '1.21'
