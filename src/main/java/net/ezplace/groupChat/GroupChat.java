@@ -1,11 +1,13 @@
 package net.ezplace.groupChat;
 
 import net.ezplace.groupChat.commands.GroupChatCommands;
+import net.ezplace.groupChat.core.GroupManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class GroupChat extends JavaPlugin {
 
-    private  GroupChat instance;
+    private static GroupChat instance;
+    private static GroupManager groupManager;
 
     @Override
     public void onEnable() {
@@ -14,7 +16,7 @@ public final class GroupChat extends JavaPlugin {
         GroupChatCommands commandExecutor = new GroupChatCommands();
         getCommand("groupchat").setExecutor(commandExecutor);
         getCommand("groupchat").setTabCompleter(commandExecutor);
-
+        groupManager = new GroupManager();
     }
 
     @Override
@@ -22,8 +24,12 @@ public final class GroupChat extends JavaPlugin {
         getLogger().info("GroupChat has been disabled!");
     }
 
-    public GroupChat getInstance() {
+    public static GroupChat getInstance() {
         return instance;
+    }
+
+    public static GroupManager getGroupManager(){
+        return groupManager;
     }
 
 }

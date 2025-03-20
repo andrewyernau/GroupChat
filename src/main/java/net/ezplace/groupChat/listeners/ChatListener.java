@@ -1,5 +1,6 @@
 package net.ezplace.groupChat.listeners;
 
+import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.core.GroupManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -8,9 +9,8 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-import javax.swing.*;
-
 public class ChatListener implements Listener {
+    GroupChat plugin = GroupChat.getInstance();
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event) {
@@ -28,11 +28,15 @@ public class ChatListener implements Listener {
     }
 
     private String formatGroupMessage(Player player, String message, String group) {
-        GroupLayout.Group g = plugin.getGroupManager().getGroup(group);
+        GroupManager.Group g = plugin.getGroupManager().getGroup(group);
         return String.format("%s%s: %s",
                 g.getPrefix(),
                 player.getName(),
                 ChatColor.translateAlternateColorCodes('&', message)
         );
+    }
+
+    public void sendToGroup(String groupName, String formatted){
+
     }
 }
