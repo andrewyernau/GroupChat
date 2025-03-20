@@ -1,4 +1,4 @@
 package net.ezplace.groupChat.utils;
 
-public class TranslationAPI {
+public class TranslationManager {
 }
