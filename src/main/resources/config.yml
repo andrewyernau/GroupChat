@@ -1,0 +1,14 @@
+groups:
+  ENG:
+    prefix: "&7[ENG] "
+    color: BLUE
+    max-members: 30
+  ESP:
+    prefix: "&7[ESP] "
+    color: RED
+    max-members: 30
+
+translation:
+  provider: "deepL" # or "google", "microsoft"
+  api-key: "super-secret-api-key"
+  cache-ttl: 3600
