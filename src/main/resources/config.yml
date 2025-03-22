@@ -11,4 +11,11 @@ groups:
 translation:
   provider: "deepL" # or "google", "microsoft"
   api-key: "super-secret-api-key"
-  cache-ttl: 3600
+  placeholder_handling: true
+  excluded_placeholders:
+    - "%player%"
+    - "{money}"
+    - "%time%"
+  cache:
+    memory_ttl: 3600 # 1 hour
+    db_persist: true
