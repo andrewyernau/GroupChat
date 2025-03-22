@@ -1,14 +1,14 @@
 package net.ezplace.groupChat.core;
 
+import com.deepl.api.DeepLException;
+
 import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.utils.TranslationAPI;
+
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TranslationManager {
@@ -34,7 +34,14 @@ public class TranslationManager {
 
         // Buscar en caché
         String translatedTemplate = translationCache.computeIfAbsent(cacheKey, k -> {
-            String translated = translateAPI.translate(template, targetLang);
+            String translated = null;
+            try {
+                translated = translateAPI.translate(template, targetLang);
+            } catch (DeepLException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             return postProcessTranslated(translated); // Mantiene placeholders
         });
 

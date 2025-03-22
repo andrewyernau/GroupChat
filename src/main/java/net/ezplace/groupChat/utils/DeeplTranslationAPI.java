@@ -1,7 +1,5 @@
 package net.ezplace.groupChat.utils;
 
-// Importa las dependencias necesarias para Deepl
-
 import com.deepl.api.DeepLClient;
 import com.deepl.api.DeepLException;
 import com.deepl.api.TextResult;
