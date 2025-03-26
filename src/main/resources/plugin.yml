@@ -1,4 +1,19 @@
 name: GroupChat
 version: '1.0-SNAPSHOT'
 main: net.ezplace.groupChat.GroupChat
-api-version: '1.21'
+api-version: '1.13'
+depend: [ProtocolLib]
+softdepend: []
+commands:
+  groupchat:
+    description: Gestiona los chats de grupo
+    usage: /groupchat <grupo|join|leave|list|translate|help>
+    aliases: [gc]
+    permission: groupchat.use
+permissions:
+  groupchat.use:
+    description: Permite usar el plugin GroupChat
+    default: true
+  groupchat.admin:
+    description: Permisos de administración para GroupChat
+    default: op
