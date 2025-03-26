@@ -11,7 +11,7 @@ public abstract class VersionAdapter {
     public abstract void sendPacket(Player player, PacketContainer packet) throws InvocationTargetException;
 
     public static VersionAdapter create() {
-        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
+        String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[2];
 
         switch(version) {
             case "v1_21_R1":

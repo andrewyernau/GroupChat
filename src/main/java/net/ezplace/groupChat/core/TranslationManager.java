@@ -74,7 +74,7 @@ public class TranslationManager {
         // Por defecto, usar el nombre del grupo como código de idioma
         // Esto asume que el nombre del grupo es un código de idioma (ej: "ESP" para español)
         // Si necesitas mapear diferente, puedes añadir otra configuración
-
+        groupName = "es";
         return groupName;
     }
 
