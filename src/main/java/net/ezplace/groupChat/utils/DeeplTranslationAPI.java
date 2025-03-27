@@ -14,9 +14,7 @@ public class DeeplTranslationAPI implements TranslationAPI {
     @Override
     public String translate(String text, String targetLang) throws DeepLException, InterruptedException {
         client = new DeepLClient(apiKey);
-        TextResult result =
-                client.translateText(text, null, targetLang);
-        System.out.println(result.getText()); // "Bonjour, le monde !"
-        return text;
+        TextResult result = client.translateText(text, null, targetLang);
+        return result.getText();
     }
 }

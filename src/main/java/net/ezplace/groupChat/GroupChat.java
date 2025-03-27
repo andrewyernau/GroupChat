@@ -1,6 +1,7 @@
 package net.ezplace.groupChat;
 
 import net.ezplace.groupChat.commands.GroupChatCommands;
+import net.ezplace.groupChat.core.CacheManager;
 import net.ezplace.groupChat.core.GroupManager;
 import net.ezplace.groupChat.core.InvitationManager;
 import net.ezplace.groupChat.core.TranslationManager;
@@ -23,6 +24,7 @@ public final class GroupChat extends JavaPlugin {
     private PacketListener packetListener;
     private ChatListener chatListener;
     private InvitationManager invitationManager;
+    private CacheManager cacheManager;
 
     @Override
     public void onEnable() {
@@ -30,11 +32,10 @@ public final class GroupChat extends JavaPlugin {
         instance = this;
         saveDefaultConfig();
         groupManager = new GroupManager(this);
-
         groupManager.loadGroups();
         groupManager.loadData();
         invitationManager = new InvitationManager(this);
-
+        cacheManager = new CacheManager(this);
 
         GroupChatCommands commandExecutor = new GroupChatCommands(this);
         getCommand("groupchat").setExecutor(commandExecutor);
@@ -72,6 +73,10 @@ public final class GroupChat extends JavaPlugin {
         if (groupManager != null) {
             saveAllData();
         }
+        if (cacheManager != null) {
+            cacheManager.getDatabase().close();
+        }
+
         getLogger().info("GroupChat ha sido deshabilitado!");
     }
 

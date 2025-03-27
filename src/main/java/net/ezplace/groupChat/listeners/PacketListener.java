@@ -30,9 +30,10 @@ public class PacketListener {
         ProtocolManager protocolManager = ProtocolLibrary.getProtocolManager();
 
         protocolManager.addPacketListener(new PacketAdapter(
-                plugin1, // Usar la instancia del plugin inyectada
+                plugin1,
                 ListenerPriority.NORMAL,
                 PacketType.Play.Server.CHAT,
+                PacketType.Play.Server.SYSTEM_CHAT, // Añadir este tipo
                 PacketType.Play.Server.SET_TITLE_TEXT,
                 PacketType.Play.Server.SET_SUBTITLE_TEXT,
                 PacketType.Play.Server.SET_ACTION_BAR_TEXT
@@ -76,6 +77,11 @@ public class PacketListener {
             return position == 2; // 0: System, 1: Game Info, 2: Player Message
         }
 
+        if (packet.getType() == PacketType.Play.Server.SYSTEM_CHAT) {
+            int position = packet.getIntegers().read(0);
+            return position == 2; // 2 = Player Message
+        }
+
         return false;
     }
 
@@ -97,21 +103,24 @@ public class PacketListener {
     }
 
     private void resendTranslatedPacket(Player player, PacketContainer originalPacket, String translated) {
-        Bukkit.getScheduler().runTask(plugin1, () -> {
+        Bukkit.getScheduler().runTask(plugin1, () -> { // Cambiar a sync
             try {
                 PacketContainer newPacket = originalPacket.deepClone();
 
-                if (newPacket.getType() == PacketType.Play.Server.CHAT) {
+                if (newPacket.getType() == PacketType.Play.Server.CHAT ||
+                        newPacket.getType() == PacketType.Play.Server.SYSTEM_CHAT) {
+
                     WrappedChatComponent component = WrappedChatComponent.fromJson(translated);
                     newPacket.getChatComponents().write(0, component);
                 }
+
                 else {
                     newPacket.getStrings().write(0, translated);
                 }
 
                 versionAdapter.sendPacket(player, newPacket);
             } catch (Exception e) {
-                plugin1.getLogger().severe("Error reenviando paquete traducido: " + e.getMessage());
+                plugin1.getLogger().severe("Error: " + e.getMessage());
             }
         });
     }

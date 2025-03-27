@@ -5,8 +5,10 @@ import com.deepl.api.DeepLException;
 import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.utils.TranslationAPI;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.bukkit.entity.Player;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 public class TranslationManager {
     private final GroupChat plugin;
     private final Map<String, String> translationCache = new ConcurrentHashMap<>();
-    private final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%\\w+%|\\{[^}]+}");
+    private final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%[\\w_.-]+%|\\{[^}]+}");
     private final TranslationAPI translateAPI;
     private final CacheManager cacheManager;
     private final Set<String> excludedPlaceholders;
@@ -35,8 +37,12 @@ public class TranslationManager {
 
     public String translateIfNeeded(Player receiver, String originalText) {
         if (!shouldTranslate(receiver)) return originalText;
+        if (originalText.trim().isEmpty() || onlyExcludedPlaceholders(originalText)) {
+            return originalText;
+        }
 
-
+        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(receiver.getUniqueId());
+        if (data == null) return originalText;
         String template = extractTemplate(originalText);
         String targetLang = getPlayerLanguage(receiver);
         String cacheKey = generateCacheKey(template, targetLang);
@@ -46,7 +52,6 @@ public class TranslationManager {
         if (cached.isPresent()) {
             return applyDynamicValues(originalText, cached.get());
         }
-        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(receiver.getUniqueId());
         GroupManager.Group group = plugin.getGroupManager().getGroup(data.getActiveGroup());
         if (group != null && group.shouldTranslate()) {
             return handleGroupTranslation(originalText, group.getTranslateLang());
@@ -67,6 +72,16 @@ public class TranslationManager {
             plugin.getLogger().warning("Error al traducir: " + e.getMessage());
             return originalText;
         }
+    }
+
+    private boolean onlyExcludedPlaceholders(String text) {
+        Matcher matcher = PLACEHOLDER_PATTERN.matcher(text);
+        while (matcher.find()) {
+            if (!excludedPlaceholders.contains(matcher.group())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String handleGroupTranslation(String text, String lang) {
@@ -109,7 +124,9 @@ public class TranslationManager {
     }
 
     public String generateCacheKey(String template, String targetLang) {
-        return template.hashCode() + ":" + targetLang;
+        return Base64.getEncoder().encodeToString(
+                (template + "||" + targetLang).getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     public String extractTemplate(String originalText) {
