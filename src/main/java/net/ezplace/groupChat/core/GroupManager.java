@@ -5,6 +5,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -158,12 +159,21 @@ public class GroupManager {
         }
     }
 
-    public void setDefaultGroup(Player player, String groupName) {
+    public void setDefaultGroup(Player player, @Nullable String groupName) {
         UUID uuid = player.getUniqueId();
         PlayerData data = players.get(uuid);
 
-        if (data != null && data.getJoinedGroups().contains(groupName.toLowerCase())) {
-            data.setActiveGroup(groupName.toLowerCase());
+        if (data == null) return;
+
+        if (groupName == null || groupName.isEmpty()) {
+            data.setActiveGroup(null);
+            player.sendMessage(ChatColor.YELLOW + "Chat global establecido como predeterminado");
+        } else {
+            String lowerGroup = groupName.toLowerCase();
+            if (data.getJoinedGroups().contains(lowerGroup)) {
+                data.setActiveGroup(lowerGroup);
+                player.sendMessage(ChatColor.GREEN + "Chat de grupo establecido a: " + groupName);
+            }
         }
     }
 

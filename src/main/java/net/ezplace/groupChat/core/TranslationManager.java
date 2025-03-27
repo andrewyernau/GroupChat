@@ -48,7 +48,9 @@ public class TranslationManager {
 
         // Traducir si no está en caché
         try {
+            plugin.getLogger().info(template+ " MENSAJE A TRADUCIR"); //DEBUG
             String translatedTemplate = translateAPI.translate(template, targetLang);
+            plugin.getLogger().info(translatedTemplate+ " MENSAJE DEVUELTO?"); //DEBUG
             translatedTemplate = postProcessTranslated(translatedTemplate);
 
             // Guardar en caché

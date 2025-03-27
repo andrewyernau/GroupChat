@@ -23,14 +23,27 @@ public class ChatListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
+        String message = event.getMessage();
+
+        // Ability to write in global temporally (1 message)
+        if (!message.isEmpty() && message.charAt(0) == '!') {
+            String globalMessage = message.substring(1).trim();
+
+            if (globalMessage.isEmpty()) {
+                event.setCancelled(true);
+                player.sendMessage(ChatColor.RED + "¡No puedes enviar mensajes vacíos!");
+                return;
+            }
+            event.setMessage(globalMessage);
+            return;
+        }
+
         GroupManager manager = plugin.getGroupManager();
 
         if (manager.isGroupChatActive(player)) {
             event.setCancelled(true);
             String groupName = manager.getActiveGroup(player);
-            String formatted = formatGroupMessage(player, event.getMessage(), groupName);
-
-            // Multicast al grupo
+            String formatted = formatGroupMessage(player, message, groupName);
             sendToGroup(groupName, formatted);
         }
     }
@@ -47,7 +60,7 @@ public class ChatListener implements Listener {
         GroupManager.Group group = plugin.getGroupManager().getGroup(groupName);
         if (group == null) return;
 
-        // Enviar mensaje a todos los miembros del grupo
+        // Multicast
         for (UUID memberId : group.getMembers()) {
             Player member = Bukkit.getPlayer(memberId);
             if (member != null && member.isOnline()) {
@@ -61,7 +74,6 @@ public class ChatListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        // Cargar los datos del jugador si es necesario
         Player player = event.getPlayer();
         plugin.getGroupManager().getPlayerData(player.getUniqueId());
     }

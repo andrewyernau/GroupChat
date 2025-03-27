@@ -67,12 +67,14 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
             case "help":
                 showHelp(player);
                 break;
+            case "global":
+                manager.setDefaultGroup(player, null);
+                break;
 
             default:
                 String groupName = subCommand;
                 if (manager.hasGroup(player, groupName)) {
                     manager.setDefaultGroup(player, groupName);
-                    player.sendMessage(ChatColor.GREEN + "Chat de grupo establecido a: " + groupName);
                 } else {
                     player.sendMessage(ChatColor.RED + "No perteneces al grupo: " + groupName);
                 }
@@ -138,6 +140,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
             GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(player.getUniqueId());
             if (data != null) {
                 options.addAll(data.getJoinedGroups());
+                options.add("global");
             }
 
             return options.stream()
