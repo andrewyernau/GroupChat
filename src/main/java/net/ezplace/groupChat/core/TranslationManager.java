@@ -36,6 +36,7 @@ public class TranslationManager {
     public String translateIfNeeded(Player receiver, String originalText) {
         if (!shouldTranslate(receiver)) return originalText;
 
+
         String template = extractTemplate(originalText);
         String targetLang = getPlayerLanguage(receiver);
         String cacheKey = generateCacheKey(template, targetLang);
@@ -45,7 +46,11 @@ public class TranslationManager {
         if (cached.isPresent()) {
             return applyDynamicValues(originalText, cached.get());
         }
-
+        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(receiver.getUniqueId());
+        GroupManager.Group group = plugin.getGroupManager().getGroup(data.getActiveGroup());
+        if (group != null && group.shouldTranslate()) {
+            return handleGroupTranslation(originalText, group.getTranslateLang());
+        }
         // Traducir si no está en caché
         try {
             plugin.getLogger().info(template+ " MENSAJE A TRADUCIR"); //DEBUG
@@ -64,20 +69,43 @@ public class TranslationManager {
         }
     }
 
+    private String handleGroupTranslation(String text, String lang) {
+        String template = extractTemplate(text);
+        String cacheKey = generateCacheKey(template, lang);
+
+        return cacheManager.getCachedTranslation(cacheKey)
+                .map(translated -> applyDynamicValues(text, translated))
+                .orElseGet(() -> {
+                    String translated = null;
+                    try {
+                        translated = translateAPI.translate(template, lang);
+                    } catch (DeepLException | InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    cacheManager.cacheTranslation(cacheKey, translated);
+                    return applyDynamicValues(text, translated);
+                });
+    }
+
+
     public boolean shouldTranslate(Player receiver) {
-        UUID uuid = receiver.getUniqueId();
-        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(uuid);
-        return data != null && data.isAutoTranslate() && data.getActiveGroup() != null;
+        String groupName = plugin.getGroupManager().getActiveGroup(receiver);
+        //I'm not adding support language to english translation since it is expected that all consoles
+        //write messages in english
+        if (Objects.equals(groupName, "en")) return false;
+
+        GroupManager.Group group = plugin.getGroupManager().getGroup(groupName);
+        return group != null &&
+                group.shouldTranslate() &&
+                plugin.getGroupManager().getPlayerData(receiver.getUniqueId()).isAutoTranslate();
     }
 
     public String getPlayerLanguage(Player receiver) {
         String groupName = plugin.getGroupManager().getActiveGroup(receiver);
+        if (groupName == null) return "es";
 
-        // Por defecto, usar el nombre del grupo como código de idioma
-        // Esto asume que el nombre del grupo es un código de idioma (ej: "ESP" para español)
-        // Si necesitas mapear diferente, puedes añadir otra configuración
-        groupName = "es";
-        return groupName;
+        GroupManager.Group group = plugin.getGroupManager().getGroup(groupName);
+        return group != null ? group.getTranslateLang() : "es";
     }
 
     public String generateCacheKey(String template, String targetLang) {

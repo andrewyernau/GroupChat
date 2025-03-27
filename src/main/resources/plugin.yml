@@ -17,3 +17,6 @@ permissions:
   groupchat.admin:
     description: Permisos de administración para GroupChat
     default: op
+  groupchat.bypass:
+    description: Unirse a grupos privados sin invitación
+    default: op

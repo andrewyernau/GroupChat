@@ -2,6 +2,7 @@ package net.ezplace.groupChat.commands;
 
 import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.core.GroupManager;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -24,12 +25,11 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por jugadores");
             return true;
         }
 
-        Player player = (Player) sender;
         GroupManager manager = plugin.getGroupManager();
 
         if (args.length < 1) {
@@ -45,8 +45,28 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                     player.sendMessage(ChatColor.RED + "Uso: /groupchat join <grupo>");
                     return true;
                 }
-                manager.addPlayerToGroup(player, args[1]);
-                break;
+
+                String groupName = args[1];
+                GroupManager.Group group = manager.getGroup(groupName);
+
+                if (group == null) {
+                    player.sendMessage(ChatColor.RED + "El grupo " + groupName + " no existe.");
+                    return true;
+                }
+
+                if (group.isPrivate()) {
+                    // Joining private group requires invite or bypass permission
+                    if (player.hasPermission("groupchat.bypass")) {
+                        manager.addPlayerToGroup(player, groupName);
+                    } else {
+                        player.sendMessage(ChatColor.RED + "No puedes unirte a este grupo.");
+                        return true; // Important: Stop further execution
+                    }
+                } else {
+                    // Public group, allow joining
+                    manager.addPlayerToGroup(player, groupName);
+                }
+                return true;
 
             case "leave":
                 if (args.length < 2) {
@@ -54,29 +74,49 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                     return true;
                 }
                 manager.removePlayerFromGroup(player, args[1]);
-                break;
+                return true;
 
             case "list":
                 listGroups(player);
-                break;
+                return true;
 
             case "translate":
                 toggleTranslation(player);
-                break;
+                return true;
 
             case "help":
                 showHelp(player);
-                break;
+                return true;
             case "global":
                 manager.setDefaultGroup(player, null);
-                break;
+                return true;
+            case "invite":
+                if (args.length == 2) {
+                    String activeGroup = manager.getActiveGroup(player);
+                    if (activeGroup == null || activeGroup.isEmpty()) {
+                        player.sendMessage(ChatColor.RED + "¡Primero selecciona un grupo con /groupchat <grupo>!");
+                        return true;
+                    }
+
+                    Player target = Bukkit.getPlayer(args[1]);
+                    if (target != null) {
+                        plugin.getInvitationManager().createInvite(player, target, activeGroup);
+                    }
+                    return true;
+                }else {
+                    player.sendMessage(ChatColor.RED + "Uso: /groupchat invite <jugador>");
+                    return true;
+                }
+            case "accept":
+                plugin.getInvitationManager().acceptInvite((Player)sender,
+                        plugin.getGroupManager().getActiveGroup((Player)sender));
+                return true;
 
             default:
-                String groupName = subCommand;
-                if (manager.hasGroup(player, groupName)) {
-                    manager.setDefaultGroup(player, groupName);
+                if (manager.hasGroup(player, subCommand)) {
+                    manager.setDefaultGroup(player, subCommand);
                 } else {
-                    player.sendMessage(ChatColor.RED + "No perteneces al grupo: " + groupName);
+                    player.sendMessage(ChatColor.RED + "No perteneces al grupo: " + subCommand);
                 }
                 break;
         }
@@ -124,11 +164,9 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        if (!(sender instanceof Player)) {
+        if (!(sender instanceof Player player)) {
             return Collections.emptyList();
         }
-
-        Player player = (Player) sender;
 
         if (args.length == 1) {
             List<String> options = new ArrayList<>();
@@ -137,10 +175,12 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
             options.add("list");
             options.add("translate");
             options.add("help");
+            options.add("accept");
             GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(player.getUniqueId());
             if (data != null) {
                 options.addAll(data.getJoinedGroups());
                 options.add("global");
+                options.add("invite");
             }
 
             return options.stream()
@@ -153,9 +193,20 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
 
             if (subCommand.equals("join")) {
                 return plugin.getGroupManager().getAllGroups().stream()
+                        .filter(
+                                group ->
+                                        !group.isPrivate()
+                                                || player.hasPermission("groupchat.bypass")
+                                                || isInvited(player, group.getName()))
                         .map(GroupManager.Group::getName)
                         .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
                         .collect(Collectors.toList());
+            }
+
+            if (subCommand.equals("invite")){
+                List<String> completions;
+                completions = Bukkit.getOnlinePlayers().stream().map(Player::getName).toList();
+                return completions;
             }
 
             if (subCommand.equals("leave")) {
@@ -166,8 +217,30 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                             .collect(Collectors.toList());
                 }
             }
+
+            if (subCommand.equals("accept")) {
+                // Return a list of groups the player has pending invites for
+                return getPendingInviteGroups(player).stream()
+                        .filter(name -> name.toLowerCase().startsWith(args[1].toLowerCase()))
+                        .collect(Collectors.toList());
+            }
         }
 
+        return Collections.emptyList();
+    }
+    private boolean isInvited(Player player, String groupName) {
+        UUID playerUUID = player.getUniqueId();
+        if (plugin.getInvitationManager().getPendingInvites().containsKey(playerUUID)) {
+            return plugin.getInvitationManager().getPendingInvites().get(playerUUID).containsKey(groupName.toLowerCase());
+        }
+        return false;
+    }
+
+    private List<String> getPendingInviteGroups(Player player) {
+        UUID playerUUID = player.getUniqueId();
+        if (plugin.getInvitationManager().getPendingInvites().containsKey(playerUUID)) {
+            return new ArrayList<>(plugin.getInvitationManager().getPendingInvites().get(playerUUID).keySet());
+        }
         return Collections.emptyList();
     }
 }
