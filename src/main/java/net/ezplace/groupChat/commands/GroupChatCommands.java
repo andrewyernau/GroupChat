@@ -80,9 +80,9 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                 listGroups(player);
                 return true;
 
-            case "translate":
-                toggleTranslation(player);
-                return true;
+//            case "translate":
+//                toggleTranslation(player);
+//                return true;
 
             case "help":
                 showHelp(player);

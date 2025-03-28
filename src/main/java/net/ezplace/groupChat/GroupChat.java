@@ -1,16 +1,16 @@
 package net.ezplace.groupChat;
 
 import net.ezplace.groupChat.commands.GroupChatCommands;
-import net.ezplace.groupChat.core.CacheManager;
+//import net.ezplace.groupChat.core.CacheManager;
 import net.ezplace.groupChat.core.GroupManager;
 import net.ezplace.groupChat.core.InvitationManager;
-import net.ezplace.groupChat.core.TranslationManager;
+//import net.ezplace.groupChat.core.TranslationManager;
 import net.ezplace.groupChat.listeners.ChatListener;
-import net.ezplace.groupChat.listeners.PacketListener;
-import net.ezplace.groupChat.utils.DeeplTranslationAPI;
-import net.ezplace.groupChat.utils.GoogleTranslationAPI;
-import net.ezplace.groupChat.utils.TranslationAPI;
-import org.bukkit.Bukkit;
+//import net.ezplace.groupChat.listeners.PacketListener;
+//import net.ezplace.groupChat.utils.DeeplTranslationAPI;
+//import net.ezplace.groupChat.utils.GoogleTranslationAPI;
+//import net.ezplace.groupChat.utils.TranslationAPI;
+//import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -20,11 +20,11 @@ public final class GroupChat extends JavaPlugin {
 
     private static GroupChat instance;
     private GroupManager groupManager;
-    private TranslationManager translationManager;
-    private PacketListener packetListener;
+//    private TranslationManager translationManager;
+//    private PacketListener packetListener;
     private ChatListener chatListener;
     private InvitationManager invitationManager;
-    private CacheManager cacheManager;
+//    private CacheManager cacheManager;
 
     @Override
     public void onEnable() {
@@ -35,35 +35,35 @@ public final class GroupChat extends JavaPlugin {
         groupManager.loadGroups();
         groupManager.loadData();
         invitationManager = new InvitationManager(this);
-        cacheManager = new CacheManager(this);
+//        cacheManager = new CacheManager(this);
 
         GroupChatCommands commandExecutor = new GroupChatCommands(this);
         getCommand("groupchat").setExecutor(commandExecutor);
         getCommand("groupchat").setTabCompleter(commandExecutor);
 
-        TranslationAPI translationAPI;
-        String translationProvider = getConfig().getString("translation.provider", "google");
-        String apiKey = getConfig().getString("translation.apiKey", "");
+//        TranslationAPI translationAPI;
+//        String translationProvider = getConfig().getString("translation.provider", "google");
+//        String apiKey = getConfig().getString("translation.apiKey", "");
 
-        if (translationProvider.equalsIgnoreCase("deepl")) {
-            translationAPI = new DeeplTranslationAPI(apiKey);
-        } else {
-            translationAPI = new GoogleTranslationAPI(apiKey);
-        }
-
-        translationManager = new TranslationManager(this, translationAPI);
+//        if (translationProvider.equalsIgnoreCase("deepl")) {
+//            translationAPI = new DeeplTranslationAPI(apiKey);
+//        } else {
+//            translationAPI = new GoogleTranslationAPI(apiKey);
+//        }
+//
+//        translationManager = new TranslationManager(this, translationAPI);
 
         chatListener = new ChatListener(this);
         getServer().getPluginManager().registerEvents(chatListener, this);
 
         // Registrar interceptor de paquetes (si ProtocolLib está disponible)
-        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
-            packetListener = new PacketListener(this);
-            packetListener.register();
-            getLogger().info("ProtocolLib encontrado, interceptación de paquetes activada");
-        } else {
-            getLogger().warning("ProtocolLib no encontrado, la traducción automática de mensajes del servidor no funcionará");
-        }
+//        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") != null) {
+//            packetListener = new PacketListener(this);
+//            packetListener.register();
+//            getLogger().info("ProtocolLib encontrado, interceptación de paquetes activada");
+//        } else {
+//            getLogger().warning("ProtocolLib no encontrado, la traducción automática de mensajes del servidor no funcionará");
+//        }
 
         getLogger().info("GroupChat ha sido habilitado!");
     }
@@ -73,9 +73,9 @@ public final class GroupChat extends JavaPlugin {
         if (groupManager != null) {
             saveAllData();
         }
-        if (cacheManager != null) {
-            cacheManager.getDatabase().close();
-        }
+//        if (cacheManager != null) {
+//            cacheManager.getDatabase().close();
+//        }
 
         getLogger().info("GroupChat ha sido deshabilitado!");
     }
@@ -88,9 +88,9 @@ public final class GroupChat extends JavaPlugin {
         return groupManager;
     }
 
-    public TranslationManager getTranslationManager() {
-        return translationManager;
-    }
+//    public TranslationManager getTranslationManager() {
+//        return translationManager;
+//    }
 
     public InvitationManager getInvitationManager(){
         return invitationManager;

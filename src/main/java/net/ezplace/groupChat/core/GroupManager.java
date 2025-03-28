@@ -24,17 +24,13 @@ public class GroupManager {
         private String prefix;
         private Set<UUID> members = new HashSet<>();
         private int maxSize;
-        private boolean translate;
-        private String translateLang;
         private boolean isPrivate;
 
-        public Group(String name, String prefix, ChatColor color, int maxSize, boolean translate, String translateLang, boolean isPrivate) {
+        public Group(String name, String prefix, ChatColor color, int maxSize, boolean isPrivate) {
             this.name = name;
             this.prefix = prefix;
             this.color = color;
             this.maxSize = maxSize;
-            this.translate = translate;
-            this.translateLang = translateLang;
             this.isPrivate = isPrivate;
         }
 
@@ -73,13 +69,13 @@ public class GroupManager {
             return maxSize;
         }
 
-        public boolean shouldTranslate() {
-            return translate;
-        }
-
-        public String getTranslateLang() {
-            return translateLang;
-        }
+//        public boolean shouldTranslate() {
+//            return translate;
+//        }
+//
+//        public String getTranslateLang() {
+//            return translateLang;
+//        }
 
         public boolean isPrivate() {
             return isPrivate;
@@ -131,20 +127,20 @@ public class GroupManager {
         ConfigurationSection groupSection = plugin.getConfig().getConfigurationSection("groups");
         if (groupSection != null) {
             for (String groupName : groupSection.getKeys(false)) {
-                boolean translate = groupSection.getBoolean(groupName + ".translate", false);
-                String translateLang = groupSection.getString(groupName + ".translate_lang", "en");
+//                boolean translate = groupSection.getBoolean(groupName + ".translate", false);
+//                String translateLang = groupSection.getString(groupName + ".translate_lang", "en");
                 boolean isPrivate = groupSection.getBoolean(groupName + ".private", false);
                 String prefix = groupSection.getString(groupName + ".prefix", "&7[" + groupName + "]&r ");
                 ChatColor color = ChatColor.valueOf(groupSection.getString(groupName + ".color", "WHITE"));
                 int maxMembers = groupSection.getInt(groupName + ".max-members", 50);
 
-                createGroup(groupName, prefix, color, maxMembers,translate,translateLang,isPrivate);
+                createGroup(groupName, prefix, color, maxMembers,isPrivate);
             }
         }
     }
 
-    public void createGroup(String name, String prefix, ChatColor color, int maxSize, boolean translate, String translateLang, boolean isPrivate) {
-        Group group = new Group(name, prefix, color, maxSize, translate, translateLang, isPrivate);
+    public void createGroup(String name, String prefix, ChatColor color, int maxSize, boolean isPrivate) {
+        Group group = new Group(name, prefix, color, maxSize, isPrivate);
         groups.put(name.toLowerCase(), group);
     }
 
