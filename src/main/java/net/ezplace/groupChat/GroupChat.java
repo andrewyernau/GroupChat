@@ -11,6 +11,7 @@ import net.ezplace.groupChat.listeners.ChatListener;
 //import net.ezplace.groupChat.utils.GoogleTranslationAPI;
 //import net.ezplace.groupChat.utils.TranslationAPI;
 //import org.bukkit.Bukkit;
+import net.ezplace.groupChat.utils.GroupChatMessages;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -36,8 +37,9 @@ public final class GroupChat extends JavaPlugin {
         groupManager.loadData();
         invitationManager = new InvitationManager(this);
 //        cacheManager = new CacheManager(this);
-
-        GroupChatCommands commandExecutor = new GroupChatCommands(this);
+        GroupChatMessages chatMessages = new GroupChatMessages();
+        chatMessages.loadMessages();
+        GroupChatCommands commandExecutor = new GroupChatCommands(this,groupManager);
         getCommand("groupchat").setExecutor(commandExecutor);
         getCommand("groupchat").setTabCompleter(commandExecutor);
 
@@ -64,8 +66,7 @@ public final class GroupChat extends JavaPlugin {
 //        } else {
 //            getLogger().warning("ProtocolLib no encontrado, la traducción automática de mensajes del servidor no funcionará");
 //        }
-
-        getLogger().info("GroupChat ha sido habilitado!");
+        getLogger().info(GroupChatMessages.getInstance().getMessage("plugin.enabled"));
     }
 
     @Override
@@ -76,8 +77,8 @@ public final class GroupChat extends JavaPlugin {
 //        if (cacheManager != null) {
 //            cacheManager.getDatabase().close();
 //        }
+        getLogger().info(GroupChatMessages.getInstance().getMessage("plugin.disabled"));
 
-        getLogger().info("GroupChat ha sido deshabilitado!");
     }
 
     public static GroupChat getInstance() {

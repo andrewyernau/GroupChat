@@ -2,6 +2,7 @@ package net.ezplace.groupChat.commands;
 
 import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.core.GroupManager;
+import net.ezplace.groupChat.utils.GroupChatMessages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -10,23 +11,22 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class GroupChatCommands implements CommandExecutor, TabCompleter {
     private final GroupChat plugin;
+    private final GroupManager manager;
 
-    public GroupChatCommands(GroupChat plugin) {
+    public GroupChatCommands(GroupChat plugin, GroupManager manager) {
         this.plugin = plugin;
+        this.manager = manager;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "Este comando solo puede ser usado por jugadores");
+            sender.sendMessage(GroupChatMessages.getInstance().getMessage("command.onlyplayers"));
             return true;
         }
 
@@ -42,7 +42,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
         switch (subCommand) {
             case "join":
                 if (args.length < 2) {
-                    player.sendMessage(ChatColor.RED + "Uso: /groupchat join <grupo>");
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("command.usage.join"));
                     return true;
                 }
 
@@ -50,7 +50,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                 GroupManager.Group group = manager.getGroup(groupName);
 
                 if (group == null) {
-                    player.sendMessage(ChatColor.RED + "El grupo " + groupName + " no existe.");
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("error.group.notexist", Map.of("group",groupName)));
                     return true;
                 }
 
@@ -59,8 +59,8 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                     if (player.hasPermission("groupchat.bypass")) {
                         manager.addPlayerToGroup(player, groupName);
                     } else {
-                        player.sendMessage(ChatColor.RED + "No puedes unirte a este grupo.");
-                        return true; // Important: Stop further execution
+                        player.sendMessage(GroupChatMessages.getInstance().getMessage("error.group.cantjoin"));
+                        return true;
                     }
                 } else {
                     // Public group, allow joining
@@ -70,7 +70,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
 
             case "leave":
                 if (args.length < 2) {
-                    player.sendMessage(ChatColor.RED + "Uso: /groupchat leave <grupo>");
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("command.usage.leave"));
                     return true;
                 }
                 manager.removePlayerFromGroup(player, args[1]);
@@ -87,6 +87,13 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
             case "help":
                 showHelp(player);
                 return true;
+            case "info":
+                if (args.length < 2) {
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("command.usage.info"));
+                    return true;
+                }
+                showGroupInfo(player, args[1]);
+                return true;
             case "global":
                 manager.setDefaultGroup(player, null);
                 return true;
@@ -94,7 +101,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                 if (args.length == 2) {
                     String activeGroup = manager.getActiveGroup(player);
                     if (activeGroup == null || activeGroup.isEmpty()) {
-                        player.sendMessage(ChatColor.RED + "¡Primero selecciona un grupo con /groupchat <grupo>!");
+                        player.sendMessage(GroupChatMessages.getInstance().getMessage("error.select.groupfirst"));
                         return true;
                     }
 
@@ -104,7 +111,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                     }
                     return true;
                 }else {
-                    player.sendMessage(ChatColor.RED + "Uso: /groupchat invite <jugador>");
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("command.usage.invite"));
                     return true;
                 }
             case "accept":
@@ -116,7 +123,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
                 if (manager.hasGroup(player, subCommand)) {
                     manager.setDefaultGroup(player, subCommand);
                 } else {
-                    player.sendMessage(ChatColor.RED + "No perteneces al grupo: " + subCommand);
+                    player.sendMessage(GroupChatMessages.getInstance().getMessage("command.usage.invite",Map.of("group",subCommand)));
                 }
                 break;
         }
@@ -125,42 +132,55 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
     }
 
     private void showHelp(Player player) {
-        player.sendMessage(ChatColor.GOLD + "=== GroupChat Ayuda ===");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat <grupo> - Activa el chat para un grupo");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat join <grupo> - Unirse a un grupo");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat leave <grupo> - Abandonar un grupo");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat list - Listar grupos disponibles");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat translate - Activar/desactivar traducción automática");
-        player.sendMessage(ChatColor.YELLOW + "/groupchat help - Mostrar esta ayuda");
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help1"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help2"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help3"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help4"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help5"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help6"));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help7"));
+    }
+
+    private void showGroupInfo(Player player, String groupName) {
+        GroupManager.Group group = manager.getGroup(groupName);
+        if (group == null) {
+            player.sendMessage(GroupChatMessages.getInstance().getMessage("error.group.invalid"));
+            return;
+        }
+
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help7",Map.of("group",group.getName())));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.help7",Map.of("members",String.valueOf(group.getMembers().size()))) +
+                (group.getMaxSize() > 0 ? "/" + group.getMaxSize() : GroupChatMessages.getInstance().getMessage("command.info.unlimited")));
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.info.prefix") + ChatColor.translateAlternateColorCodes('&', group.getPrefix()));
     }
 
     private void listGroups(Player player) {
         GroupManager manager = plugin.getGroupManager();
-        player.sendMessage(ChatColor.GOLD + "=== Grupos disponibles ===");
+        player.sendMessage(GroupChatMessages.getInstance().getMessage("command.groups.header"));
 
         for (GroupManager.Group group : manager.getAllGroups()) {
             boolean isMember = manager.hasGroup(player, group.getName());
-            String status = isMember ? ChatColor.GREEN + "[Miembro]" : ChatColor.GRAY + "";
+            String status = isMember ? ChatColor.GREEN + GroupChatMessages.getInstance().getMessage("command.groups.member") : ChatColor.GRAY + "";
             player.sendMessage(ChatColor.translateAlternateColorCodes('&',
                     group.getPrefix() + " " + status));
         }
     }
 
-    private void toggleTranslation(Player player) {
-        UUID uuid = player.getUniqueId();
-        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(uuid);
-
-        if (data != null) {
-            boolean newStatus = !data.isAutoTranslate();
-            data.setAutoTranslate(newStatus);
-
-            if (newStatus) {
-                player.sendMessage(ChatColor.GREEN + "Traducción automática activada");
-            } else {
-                player.sendMessage(ChatColor.YELLOW + "Traducción automática desactivada");
-            }
-        }
-    }
+//    private void toggleTranslation(Player player) {
+//        UUID uuid = player.getUniqueId();
+//        GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(uuid);
+//
+//        if (data != null) {
+//            boolean newStatus = !data.isAutoTranslate();
+//            data.setAutoTranslate(newStatus);
+//
+//            if (newStatus) {
+//                player.sendMessage(ChatColor.GREEN + "Traducción automática activada");
+//            } else {
+//                player.sendMessage(ChatColor.YELLOW + "Traducción automática desactivada");
+//            }
+//        }
+//    }
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -173,7 +193,8 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
             options.add("join");
             options.add("leave");
             options.add("list");
-            options.add("translate");
+//            options.add("translate");
+            options.add("info");
             options.add("help");
             options.add("accept");
             GroupManager.PlayerData data = plugin.getGroupManager().getPlayerData(player.getUniqueId());
@@ -191,7 +212,7 @@ public class GroupChatCommands implements CommandExecutor, TabCompleter {
         if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
 
-            if (subCommand.equals("join")) {
+            if (subCommand.equals("join") || subCommand.equals("info")) {
                 return plugin.getGroupManager().getAllGroups().stream()
                         .filter(
                                 group ->

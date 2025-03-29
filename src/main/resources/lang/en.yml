@@ -1,0 +1,41 @@
+plugin.enabled: "GroupChat has been enabled!"
+plugin.disabled: "GroupChat has been disabled!"
+
+error.message.empty: "§cYou cannot send empty messages!"
+error.group.null: "§cGroup name cannot be null"
+error.group.invalid: "§cInvalid group"
+error.group.notexist: "§cThe group {group} does not exist."
+error.private: "§cOnly administrators can create private groups"
+error.group.notin: "§cYou do not belong to this private group"
+error.group.notin2: "§cYou do not belong to the group: {group}"
+error.select.groupfirst: "§cSelect a group first with /groupchat <group>!"
+error.data.save: "§cError saving player data"
+error.group.cantjoin: "§cYou cannot join this group."
+
+warning.uuid.notvalid: "§eInvalid UUID in playerdata.yml: {uuid}"
+
+message.invite.receive: "§6Invitation to group {group} received from {inviter}. Use /groupchat accept {group} to join"
+message.default.global: "§eGlobal chat set as default"
+message.default.group: "§eGroup chat set to: {group}"
+
+command.onlyplayers: "§cThis command can only be used by players."
+command.usage.join: "§cUsage: /groupchat join <group>"
+command.usage.leave: "§cUsage: /groupchat leave <group>"
+command.usage.info: "§cUsage: /groupchat info <group>"
+command.usage.invite: "§cUsage: /groupchat invite <player> with the group selected by default"
+
+command.info.header: "§6=== Information of {group} ==="
+command.info.members: "§eMembers: {members}"
+command.info.unlimited: "(unlimited)"
+command.info.prefix: "§ePrefix: "
+
+command.groups.header: "§6=== Available Groups ==="
+command.groups.member: "§a[Member]"
+
+command.help1: "§6=== GroupChat Help ==="
+command.help2: "§e/groupchat <group> - Activates chat for a group"
+command.help3: "§e/groupchat join <group> - Join a group"
+command.help4: "§e/groupchat leave <group> - Leave a group"
+command.help5: "§e/groupchat list - List available groups"
+command.help6: "§e/groupchat translate - Enable/disable automatic translation"
+command:help7: "§e/groupchat help - Show this help"

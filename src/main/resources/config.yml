@@ -1,37 +1,14 @@
+lang: "es"
 groups:
   ENG:
-    translate: false
-    translate_lang: "en"
     private: false
     prefix: "&7[ENG]&r "
-    color: BLUE
-    max-members: 30
+    max-members: 30 #Use 0 if unlimited
   ESP:
-    translate: true
-    translate_lang: "es"
     private: false
     prefix: "&7[ESP]&r "
-    color: RED
     max-members: 30
   ADMIN:
-    translate: false
-    translate_lang: "es"
     private: false
     prefix: "&7[ADMIN]&r "
-    color: RED
     max-members: 30
-# "en" translate lang is not supposed to be translated, so I'm not adding translate support to it
-# The main reason of that is to avoid translate english to english hence almost all plugins do
-# write messages in english. The purpose of the translation section is to translate from english to
-# another language.
-translation:
-  provider: "deepL" # or "google", "microsoft"
-  api-key: "super-secret-api-key"
-  placeholder_handling: true
-  excluded_placeholders:
-    - "%player%"
-    - "{money}"
-    - "%time%"
-  cache:
-    memory_ttl: 3600 # 1 hour
-    db_persist: true

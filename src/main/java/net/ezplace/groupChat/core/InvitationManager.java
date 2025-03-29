@@ -1,6 +1,7 @@
 package net.ezplace.groupChat.core;
 
 import net.ezplace.groupChat.GroupChat;
+import net.ezplace.groupChat.utils.GroupChatMessages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -19,20 +20,18 @@ public class InvitationManager {
 
     public void createInvite(Player inviter, Player target, String groupName) {
         if (groupName == null || groupName.isEmpty()) {
-            throw new IllegalArgumentException("Nombre de grupo no puede ser nulo");
+            throw new IllegalArgumentException(GroupChatMessages.getInstance().getMessage("error.group.null"));
         }
-
+        String formattedPrefix = ChatColor.translateAlternateColorCodes('&', groupName);
         pendingInvites
                 .computeIfAbsent(target.getUniqueId(), k -> new ConcurrentHashMap<>())
                 .put(groupName.toLowerCase(), inviter.getUniqueId());
-
-        target.sendMessage(ChatColor.GOLD + "Invitación al grupo " + groupName +
-                " recibida de " + inviter.getName() + ". Usa /groupchat accept " + groupName);
+        target.sendMessage(GroupChatMessages.getInstance().getMessage("message.invite.receive",Map.of("group",formattedPrefix,"inviter",inviter.getName())));
     }
 
     public boolean acceptInvite(Player player, String groupName) {
         if (groupName == null) {
-            player.sendMessage(ChatColor.RED + "Grupo inválido");
+            player.sendMessage(GroupChatMessages.getInstance().getMessage("error.group.invalid"));
             return false;
         }
 

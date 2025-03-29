@@ -2,6 +2,7 @@ package net.ezplace.groupChat.listeners;
 
 import net.ezplace.groupChat.GroupChat;
 import net.ezplace.groupChat.core.GroupManager;
+import net.ezplace.groupChat.utils.GroupChatMessages;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -31,7 +32,7 @@ public class ChatListener implements Listener {
 
             if (globalMessage.isEmpty()) {
                 event.setCancelled(true);
-                player.sendMessage(ChatColor.RED + "¡No puedes enviar mensajes vacíos!");
+                player.sendMessage(GroupChatMessages.getInstance().getMessage("error.message.empty"));
                 return;
             }
             event.setMessage(globalMessage);

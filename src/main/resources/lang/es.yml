@@ -1,0 +1,42 @@
+plugin.enabled: "GroupChat ha sido habilitado!"
+plugin.disabled: "GroupChat ha sido deshabilitado!"
+
+error.message.empty: "§c¡No puedes enviar mensajes vacíos!"
+error.group.null: "§cNombre de grupo no puede ser nulo"
+error.group.invalid: "§cGrupo inválido"
+error.group.notexist: "§cEl grupo {group} no existe."
+error.private: "§cSólo los administradores pueden crear grupos privados"
+error.group.notin: "§cNo perteneces a este grupo privado"
+error.group.notin2: "§cNo perteneces al grupo: {group}"
+error.select.groupfirst: "§c¡Primero selecciona un grupo con /groupchat <grupo>!"
+error.data.save: "§cError guardando datos de jugadores"
+error.group.cantjoin: "§cNo puedes unirte a este grupo."
+
+warning.uuid.notvalid: "§eUUID inválido en playerdata.yml: {uuid}"
+
+message.invite.receive: "§6Invitación al grupo {group} recibida de {inviter}. Usa /groupchat accept {group} para unirte"
+message.default.global: "§eChat global establecido como predeterminado"
+message.default.group: "§eChat de grupo establecido a: {group}"
+
+command.onlyplayers: "§cEste comando sólo puede ser usado por jugadores."
+command.usage.join: "§cUso: /groupchat join <grupo>"
+command.usage.leave: "§cUso: /groupchat leave <grupo>"
+command.usage.info: "§cUso: /groupchat info <grupo>"
+command.usage.invite: "§cUso: /groupchat invite <jugador> con el grupo seleccionado por defecto"
+
+command.info.header: "§6===Información de {group} ==="
+command.info.members: "§eMiembros: {members}"
+command.info.unlimited: "(ilimitado)"
+command.info.prefix: "§ePrefijo: "
+
+command.groups.header: "§6=== Grupos disponibles ==="
+command.groups.member: "§a[Miembro]"
+
+command.help1: "§6=== GroupChat Ayuda ==="
+command.help2: "§e/groupchat <grupo> - Activa el chat para un grupo"
+command.help3: "§e/groupchat join <grupo> - Unirse a un grupo"
+command.help4: "§e/groupchat leave <grupo> - Abandonar un grupo"
+command.help5: "§e/groupchat list - Listar grupos disponibles"
+command.help6: "§e/groupchat translate - Activar/desactivar traducción automática"
+command:help7: "§e/groupchat help - Mostrar esta ayuda"
+

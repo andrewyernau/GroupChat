@@ -1,6 +1,7 @@
 package net.ezplace.groupChat.core;
 
 import net.ezplace.groupChat.GroupChat;
+import net.ezplace.groupChat.utils.GroupChatMessages;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -20,16 +21,16 @@ public class GroupManager {
 
     public static class Group {
         private String name;
-        private ChatColor color;
+//       private ChatColor color;
         private String prefix;
         private Set<UUID> members = new HashSet<>();
         private int maxSize;
         private boolean isPrivate;
 
-        public Group(String name, String prefix, ChatColor color, int maxSize, boolean isPrivate) {
+        public Group(String name, String prefix, int maxSize, boolean isPrivate) {
             this.name = name;
             this.prefix = prefix;
-            this.color = color;
+//            this.color = color;
             this.maxSize = maxSize;
             this.isPrivate = isPrivate;
         }
@@ -38,16 +39,16 @@ public class GroupManager {
             return name;
         }
 
-        public ChatColor getColor() {
-            return color;
-        }
+//        public ChatColor getColor() {
+//            return color;
+//        }
 
         public String getPrefix() {
             return this.prefix;
         }
 
         public boolean addMember(UUID uuid) {
-            if (members.size() >= maxSize) {
+            if (getMaxSize() > 0 && members.size() >= getMaxSize()) {
                 return false;
             }
             return members.add(uuid);
@@ -131,16 +132,16 @@ public class GroupManager {
 //                String translateLang = groupSection.getString(groupName + ".translate_lang", "en");
                 boolean isPrivate = groupSection.getBoolean(groupName + ".private", false);
                 String prefix = groupSection.getString(groupName + ".prefix", "&7[" + groupName + "]&r ");
-                ChatColor color = ChatColor.valueOf(groupSection.getString(groupName + ".color", "WHITE"));
-                int maxMembers = groupSection.getInt(groupName + ".max-members", 50);
+//                ChatColor color = ChatColor.valueOf(groupSection.getString(groupName + ".color", "WHITE"));
+                int maxMembers = groupSection.getInt(groupName + ".max-members", 0);
 
-                createGroup(groupName, prefix, color, maxMembers,isPrivate);
+                createGroup(groupName, prefix, maxMembers,isPrivate);
             }
         }
     }
 
-    public void createGroup(String name, String prefix, ChatColor color, int maxSize, boolean isPrivate) {
-        Group group = new Group(name, prefix, color, maxSize, isPrivate);
+    public void createGroup(String name, String prefix, int maxSize, boolean isPrivate) {
+        Group group = new Group(name, prefix, maxSize, isPrivate);
         groups.put(name.toLowerCase(), group);
     }
 
@@ -171,14 +172,26 @@ public class GroupManager {
         Group group = groups.get(groupName.toLowerCase());
 
         if (group == null) {
+            player.sendMessage(ChatColor.RED + "El grupo no existe");
             return;
         }
+
         PlayerData data = players.computeIfAbsent(uuid, k -> new PlayerData());
+
+        if (data.getJoinedGroups().contains(groupName.toLowerCase())) {
+            player.sendMessage(ChatColor.YELLOW + "Ya perteneces a este grupo");
+            return;
+        }
+
         if (group.addMember(uuid)) {
             data.getJoinedGroups().add(groupName.toLowerCase());
-            player.sendMessage(ChatColor.GREEN + "Te has unido al grupo: " + group.getPrefix());
+            String message = ChatColor.GREEN + "Te has unido al grupo: " + group.getPrefix();
+            if (group.getMaxSize() > 0) {
+                message += ChatColor.GRAY + " (" + group.getMembers().size() + "/" + group.getMaxSize() + ")";
+            }
+            player.sendMessage(message);
         } else {
-            player.sendMessage(ChatColor.RED + "El grupo está lleno");
+            player.sendMessage(ChatColor.RED + "El grupo " + group.getPrefix() + ChatColor.RED + " está lleno");
         }
     }
 
@@ -188,11 +201,12 @@ public class GroupManager {
 
         if (group.getMembers().isEmpty()) {
             if (!inviter.hasPermission("groupchat.admin")) {
-                inviter.sendMessage(ChatColor.RED + "Solo administradores pueden crear grupos privados");
+                inviter.sendMessage(GroupChatMessages.getInstance().getMessage("error.private"));
                 return false;
             }
+            //GroupChatMessages.getInstance().getMessage("message.invite.receive",Map.of("group",formattedPrefix,"inviter",inviter.getName()))
         } else if (!group.hasMember(inviter.getUniqueId())) {
-            inviter.sendMessage(ChatColor.RED + "No perteneces a este grupo privado");
+            inviter.sendMessage(GroupChatMessages.getInstance().getMessage("error.group.notin"));
             return false;
         }
         addPlayerToGroup(player, groupName);
@@ -202,17 +216,18 @@ public class GroupManager {
     public void setDefaultGroup(Player player, @Nullable String groupName) {
         UUID uuid = player.getUniqueId();
         PlayerData data = players.get(uuid);
-
+        assert groupName != null;
+        String formattedPrefix = ChatColor.translateAlternateColorCodes('&', groupName);
         if (data == null) return;
 
-        if (groupName == null || groupName.isEmpty()) {
+        if (groupName.isEmpty()) {
             data.setActiveGroup(null);
-            player.sendMessage(ChatColor.YELLOW + "Chat global establecido como predeterminado");
+            player.sendMessage(GroupChatMessages.getInstance().getMessage("message.default.global"));
         } else {
             String lowerGroup = groupName.toLowerCase();
             if (data.getJoinedGroups().contains(lowerGroup)) {
                 data.setActiveGroup(lowerGroup);
-                player.sendMessage(ChatColor.GREEN + "Chat de grupo establecido a: " + groupName);
+                player.sendMessage(GroupChatMessages.getInstance().getMessage("message.default.group",Map.of("group",formattedPrefix)));
             }
         }
     }
@@ -262,7 +277,7 @@ public class GroupManager {
         try {
             config.save(playerDataFile);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Error guardando datos de jugadores", e);
+            plugin.getLogger().log(Level.SEVERE, GroupChatMessages.getInstance().getMessage("error.data.save"), e);
         }
     }
 
@@ -283,7 +298,7 @@ public class GroupManager {
 
                 players.put(uuid, data);
             } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("UUID inválido en playerdata.yml: " + uuidStr);
+                plugin.getLogger().warning(GroupChatMessages.getInstance().getMessage("warning.uuid.notvalid",Map.of("uuid",uuidStr)));
             }
         }
     }
